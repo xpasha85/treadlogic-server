@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Coach Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        body { background-color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div x-data="app()" x-init="initApp()" class="flex-grow flex flex-col">
+
+        <div x-show="!isAuthenticated" x-cloak 
+             class="fixed inset-0 flex items-center justify-center bg-gray-100 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+                <div class="text-4xl mb-4">🔐</div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Доступ к Run Coach</h2>
+                <p class="text-gray-500 mb-6">Введите API Token для управления тренировками</p>
+                
+                <form @submit.prevent="login">
+                    <input type="password" x-model="tokenInput" placeholder="Ваш Bearer Token" 
+                           class="w-full border bg-gray-50 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition"
+                           autofocus>
+                    <button type="submit" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition transform active:scale-95">
+                        Войти
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div x-show="isAuthenticated" x-cloak class="max-w-5xl mx-auto w-full p-4 md:p-8">
+            
+            <div class="flex flex-row justify-between items-center mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    🏃‍♂️ Run Coach <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-normal">Admin</span>
+                </h1>
+                
+                <div class="flex gap-2">
+                    <button @click="fetchWorkouts()" class="bg-white p-2 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600" title="Обновить список">
+                        🔄
+                    </button>
+                    <button @click="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 text-sm font-medium transition">
+                        Выйти
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <button @click="showAddModal = true" 
+                        class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5">
+                    <span>➕ Добавить тренировку (JSON)</span>
+                </button>
+            </div>
+
+            <div x-show="error" x-cloak class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow" role="alert">
+                <p x-text="error"></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+                <template x-for="workout in workouts" :key="workout.id">
+                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition duration-300 overflow-hidden border-l-8 relative group"
+                         :class="getBorderColor(workout.meta.workout_type)">
+                        
+                        <button @click="deleteWorkout(workout.id)" 
+                                class="absolute top-4 right-4 p-2 bg-gray-50 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition opacity-100 md:opacity-0 group-hover:opacity-100">
+                            🗑️
+                        </button>
+
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-2xl" x-text="getIcon(workout.meta.workout_type)"></span>
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-400" x-text="formatDate(workout.meta.date)"></span>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-gray-900 mb-2 leading-tight" x-text="workout.meta.title"></h3>
+                            <p class="text-gray-600 text-sm mb-5 line-clamp-2" x-text="workout.meta.description"></p>
+                            
+                            <div class="flex flex-wrap gap-2 text-xs font-medium">
+                                <span class="bg-gray-100 px-2.5 py-1 rounded-md text-gray-600 flex items-center gap-1">
+                                    ⏱ <span x-text="Math.round(workout.meta.total_duration_estimate_sec / 60) + ' мин'"></span>
+                                </span>
+                                <span class="bg-gray-100 px-2.5 py-1 rounded-md text-gray-600" x-text="workout.meta.workout_type"></span>
+                                <span class="bg-gray-100 px-2.5 py-1 rounded-md text-gray-600" 
+                                      x-text="pluralize(workout.segments.length, ['этап', 'этапа', 'этапов'])"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="isAuthenticated && workouts.length === 0 && !loading" x-cloak class="text-center text-gray-400 py-12">
+                <div class="text-6xl mb-4">📭</div>
+                <p class="text-xl">Тренировок пока нет</p>
+                <p class="text-sm mt-2">Добавьте первую запись, чтобы начать</p>
+            </div>
+        </div>
+
+        <div x-show="showAddModal" x-cloak 
+             class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity"
+             @keydown.escape.window="showAddModal = false">
+            <div class="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative flex flex-col max-h-[90vh]">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Новая тренировка</h2>
+                    <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+                
+                <div class="mb-2">
+                    <button @click="insertTemplate()" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                        📋 Вставить пример (Шаблон)
+                    </button>
+                </div>
+
+                <textarea x-model="newJson" 
+                          class="w-full flex-grow border rounded-lg p-4 font-mono text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                          placeholder='{"id": "...", "meta": {...}}'></textarea>
+                
+                <div class="flex justify-end gap-3 mt-6">
+                    <button @click="showAddModal = false" class="px-6 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition">Отмена</button>
+                    <button @click="submitWorkout()" class="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition shadow-md">
+                        Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = '/workouts'; // ⚠️ При деплое укажи свой IP/домен
+
+        function app() {
+            return {
+                isAuthenticated: false,
+                token: '',
+                tokenInput: '',
+                workouts: [],
+                loading: false,
+                error: null,
+                showAddModal: false,
+                newJson: '',
+
+                initApp() {
+                    const savedToken = localStorage.getItem('api_token');
+                    if (savedToken) {
+                        this.token = savedToken;
+                        this.isAuthenticated = true;
+                        this.fetchWorkouts();
+                    }
+                },
+
+                login() {
+                    if (this.tokenInput.trim() !== '') {
+                        this.token = this.tokenInput.trim();
+                        localStorage.setItem('api_token', this.token);
+                        this.isAuthenticated = true;
+                        this.tokenInput = '';
+                        this.fetchWorkouts();
+                    }
+                },
+
+                logout() {
+                    if(confirm('Выйти и удалить токен из браузера?')) {
+                        localStorage.removeItem('api_token');
+                        this.token = '';
+                        this.isAuthenticated = false;
+                        this.workouts = [];
+                    }
+                },
+
+                async fetchWorkouts() {
+                    this.loading = true;
+                    this.error = null;
+                    try {
+                        const res = await fetch(API_URL, {
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                        
+                        if (res.status === 401) {
+                            // Если токен протух или неверен — выкидываем на логин
+                            this.logout(); 
+                            alert("Ошибка авторизации. Проверьте токен.");
+                            return;
+                        }
+                        
+                        if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`);
+                        
+                        this.workouts = await res.json();
+                        // Сортировка: новые даты сверху
+                        this.workouts.sort((a, b) => new Date(b.meta.date) - new Date(a.meta.date));
+                    } catch (e) {
+                        this.error = "Нет связи с сервером. Проверьте Docker и URL.";
+                        console.error(e);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async submitWorkout() {
+                    try {
+                        const payload = JSON.parse(this.newJson);
+                        const res = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.token}`
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!res.ok) throw new Error('Не удалось сохранить');
+
+                        this.showAddModal = false;
+                        this.newJson = '';
+                        this.fetchWorkouts();
+                    } catch (e) {
+                        alert("Ошибка!\n" + e.message);
+                    }
+                },
+
+                async deleteWorkout(id) {
+                    if (!confirm('Удалить эту тренировку?')) return;
+                    try {
+                        const res = await fetch(`${API_URL}/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                        if (!res.ok) throw new Error('Ошибка удаления');
+                        this.fetchWorkouts();
+                    } catch (e) {
+                        alert("Не удалось удалить");
+                    }
+                },
+
+                // === HELPER FUNCTIONS ===
+
+                // Правильное склонение числительных (1 этап, 2 этапа, 5 этапов)
+                pluralize(n, text_forms) {
+                    n = Math.abs(n) % 100; 
+                    var n1 = n % 10;
+                    if (n > 10 && n < 20) { return n + ' ' + text_forms[2]; }
+                    if (n1 > 1 && n1 < 5) { return n + ' ' + text_forms[1]; }
+                    if (n1 == 1) { return n + ' ' + text_forms[0]; }
+                    return n + ' ' + text_forms[2];
+                },
+
+                formatDate(dateStr) {
+                    // Простое форматирование даты
+                    return dateStr; 
+                },
+
+                getIcon(type) {
+                    const icons = {
+                        'Recovery': '🍃', 'Easy': '🏃', 'Tempo': '🔥',
+                        'Intervals': '⚡', 'LongRun': '🛣️', 'Test': '🏁'
+                    };
+                    return icons[type] || '📅';
+                },
+
+                getBorderColor(type) {
+                    const colors = {
+                        'Recovery': 'border-green-500', 'Easy': 'border-blue-400',
+                        'Tempo': 'border-orange-500', 'Intervals': 'border-red-500',
+                        'LongRun': 'border-purple-500', 'Test': 'border-black'
+                    };
+                    return colors[type] || 'border-gray-500';
+                },
+
+                insertTemplate() {
+                    const today = new Date().toISOString().split('T')[0];
+                    const template = {
+                        "id": "run_" + today,
+                        "meta": {
+                            "date": today,
+                            "title": "Новая тренировка",
+                            "workout_type": "Easy",
+                            "description": "Легкий кросс для поддержания формы",
+                            "total_duration_estimate_sec": 3000,
+                            "coach_notes": "Следи за пульсом",
+                            "gear": "Любимые кроссовки",
+                            "allow_overtime": false
+                        },
+                        "segments": [
+                            {
+                                "segment_type": "simple",
+                                "step_type": "warmup",
+                                "title": "Разминка",
+                                "duration_sec": 600,
+                                "speed_kph": 9.0,
+                                "incline_percent": 0.0,
+                                "notes": "Начинаем спокойно"
+                            },
+                            {
+                                "segment_type": "simple",
+                                "step_type": "work",
+                                "title": "Бег",
+                                "duration_sec": 2400,
+                                "speed_kph": 10.5,
+                                "incline_percent": 1.0,
+                                "notes": "Рабочий темп"
+                            }
+                        ]
+                    };
+                    this.newJson = JSON.stringify(template, null, 2);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

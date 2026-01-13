@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    container_name: treadlogic-app
+    restart: always
+    ports:
+      - "8100:8090" # В Portainer можно будет переопределить или использовать внутреннюю сеть
+    environment:
+      - API_TOKEN=${API_TOKEN} # Будем задавать в Portainer
+    volumes:
+      - ./workouts.json:/app/workouts.json

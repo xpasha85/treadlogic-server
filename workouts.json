@@ -1,0 +1,114 @@
+[
+  {
+    "id": "run_2026-01-13",
+    "meta": {
+      "date": "2026-01-13",
+      "title": "Легкий бег (Восстановление)",
+      "workout_type": "Recovery",
+      "description": "Спокойный бег на уставших ногах после силовой.",
+      "total_duration_estimate_sec": 3600,
+      "coach_notes": "Главное — не превышать пульс 140.",
+      "gear": "👟 Xtep 2000km",
+      "post_workout_action": "📱 Смени обувь в Garmin!",
+      "allow_overtime": false
+    },
+    "segments": [
+      {
+        "segment_type": "simple",
+        "step_type": "warmup",
+        "title": "Разминка",
+        "duration_sec": 600,
+        "speed_kph": 9.5,
+        "incline_percent": 0.5,
+        "notes": "Мягкий вход"
+      },
+      {
+        "segment_type": "simple",
+        "step_type": "work",
+        "title": "Основной блок",
+        "duration_sec": 2700,
+        "speed_kph": 11.0,
+        "incline_percent": 1.0,
+        "notes": "Ровный темп"
+      },
+      {
+        "segment_type": "simple",
+        "step_type": "cooldown",
+        "title": "Заминка",
+        "duration_sec": 300,
+        "speed_kph": 8.0,
+        "incline_percent": 0.0,
+        "notes": "Плавное замедление"
+      }
+    ]
+  },
+  {
+    "id": "run_2026-01-15",
+    "meta": {
+      "date": "2026-01-15",
+      "title": "Темповая ПАНО (2 серии)",
+      "workout_type": "Tempo",
+      "description": "Работаем на пороге ПАНО.",
+      "total_duration_estimate_sec": 3300,
+      "coach_notes": "Терпеть!",
+      "gear": "👟 Anta Mach 5",
+      "post_workout_action": null,
+      "allow_overtime": true
+    },
+    "segments": [
+      {
+        "segment_type": "simple",
+        "step_type": "warmup",
+        "title": "Разминка",
+        "duration_sec": 600,
+        "speed_kph": 9.5,
+        "incline_percent": 0.5,
+        "notes": ""
+      },
+      {
+        "segment_type": "simple",
+        "step_type": "warmup",
+        "title": "Активация",
+        "duration_sec": 180,
+        "speed_kph": 11.5,
+        "incline_percent": 1.0,
+        "notes": ""
+      },
+      {
+        "segment_type": "complex",
+        "title": "РАБОЧИЕ СЕРИИ",
+        "repeat_count": 2,
+        "skip_last_rest": true,
+        "steps": [
+          {
+            "segment_type": "simple",
+            "step_type": "work",
+            "title": "Темп ПАНО",
+            "duration_sec": 900,
+            "speed_kph": 12.8,
+            "incline_percent": 1.0,
+            "notes": "Держи ритм"
+          },
+          {
+            "segment_type": "simple",
+            "step_type": "rest",
+            "title": "Отдых",
+            "duration_sec": 180,
+            "speed_kph": 8.0,
+            "incline_percent": 0.0,
+            "notes": "Трусца"
+          }
+        ]
+      },
+      {
+        "segment_type": "simple",
+        "step_type": "cooldown",
+        "title": "Заминка",
+        "duration_sec": 600,
+        "speed_kph": 8.0,
+        "incline_percent": 0.0,
+        "notes": ""
+      }
+    ]
+  }
+]

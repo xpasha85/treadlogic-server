@@ -1,0 +1,6 @@
+__pycache__/
+venv/
+.env
+workouts.json
+.git/
+.DS_Store
