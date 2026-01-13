@@ -250,8 +250,14 @@
                 },
 
                 formatDate(dateStr) {
-                    // Простое форматирование даты
-                    return dateStr; 
+                    if (!dateStr) return '';
+                    // Разбиваем дату "2026-01-13" по дефису
+                    const parts = dateStr.split('-');
+                    // Если вдруг формат не тот, возвращаем как есть
+                    if (parts.length !== 3) return dateStr;
+                    
+                    // Собираем обратно: день.месяц.год
+                    return `${parts[2]}.${parts[1]}.${parts[0]}`; 
                 },
 
                 getIcon(type) {
