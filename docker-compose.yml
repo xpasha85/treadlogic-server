@@ -5,8 +5,13 @@ services:
     container_name: treadlogic-app
     restart: always
     ports:
-      - "8100:8090" # В Portainer можно будет переопределить или использовать внутреннюю сеть
+      - "8100:8090"
     environment:
-      - API_TOKEN=${API_TOKEN} # Будем задавать в Portainer
+      - API_TOKEN=${API_TOKEN}
     volumes:
-      - ./workouts.json:/app/workouts.json
+      # Монтируем ТОМ в папку data внутри контейнера
+      - treadlogic_data:/app/data
+
+# Объявляем том (Docker создаст его сам)
+volumes:
+  treadlogic_data:

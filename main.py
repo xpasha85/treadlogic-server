@@ -10,7 +10,9 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
 # --- НАСТРОЙКИ ---
-DATA_FILE = "workouts.json"
+DATA_FILE = "data/workouts.json"
+if not os.path.exists("data"):
+    os.makedirs("data")
 API_TOKEN = os.getenv("API_TOKEN", "secret123") 
 
 app = FastAPI(title="TreadLogic API")
