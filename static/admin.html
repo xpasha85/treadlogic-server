@@ -102,27 +102,35 @@
         </div>
 
         <div x-show="showAddModal" x-cloak 
-             class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity"
+             class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity"
              @keydown.escape.window="showAddModal = false">
-            <div class="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative flex flex-col max-h-[90vh]">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">Новая тренировка</h2>
-                    <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
+            
+            <div class="bg-white rounded-2xl w-full max-w-5xl h-[80vh] p-6 shadow-2xl relative flex flex-col">
+                
+                <div class="flex justify-between items-center mb-4 border-b pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Новая тренировка</h2>
+                        <p class="text-sm text-gray-500">Вставьте JSON объект тренировки</p>
+                    </div>
+                    <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-800 text-3xl hover:rotate-90 transition">&times;</button>
                 </div>
                 
-                <div class="mb-2">
-                    <button @click="insertTemplate()" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
-                        📋 Вставить пример (Шаблон)
+                <div class="mb-4 flex gap-4">
+                    <button @click="insertTemplate()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded hover:bg-blue-100 font-medium flex items-center gap-2 transition">
+                        📄 Вставить шаблон
+                    </button>
+                    <button @click="newJson = ''" class="text-sm text-gray-500 px-3 py-1.5 hover:text-red-500 transition">
+                        Очистить
                     </button>
                 </div>
 
                 <textarea x-model="newJson" 
-                          class="w-full flex-grow border rounded-lg p-4 font-mono text-xs bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                          placeholder='{"id": "...", "meta": {...}}'></textarea>
+                          class="w-full flex-grow border border-gray-300 rounded-xl p-4 font-mono text-sm bg-gray-50 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none resize-none leading-relaxed shadow-inner"
+                          placeholder='{\n  "id": "...",\n  "meta": {...}\n}'></textarea>
                 
-                <div class="flex justify-end gap-3 mt-6">
-                    <button @click="showAddModal = false" class="px-6 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition">Отмена</button>
-                    <button @click="submitWorkout()" class="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition shadow-md">
+                <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+                    <button @click="showAddModal = false" class="px-6 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 font-medium transition">Отмена</button>
+                    <button @click="submitWorkout()" class="px-8 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold shadow-lg shadow-blue-500/30 transition transform active:scale-95">
                         Сохранить
                     </button>
                 </div>
